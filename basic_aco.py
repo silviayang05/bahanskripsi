@@ -7,9 +7,8 @@ from threading import Thread
 from queue import Queue
 import time
 
-
 class BasicACO:
-    def __init__(self, graph: VrptwGraph, ants_num=10, max_iter=200, beta=2, q0=0.1,
+    def __init__(self, graph: VrptwGraph, ants_num=10, max_iter=200, beta=2, tau=0.1,
                  whether_or_not_to_show_figure=True):
         super()
         # graph Lokasi node dan informasi waktu layanan
@@ -22,8 +21,7 @@ class BasicACO:
         self.max_load = graph.vehicle_capacity
         # beta Pentingnya informasi heuristik
         self.beta = beta
-        # q0 Merupakan probabilitas untuk langsung memilih titik berikutnya dengan probabilitas tertinggi
-        self.q0 = q0
+        self.tau = tau
         # best path
         self.best_path_distance = None
         self.best_path = None
@@ -113,13 +111,10 @@ class BasicACO:
         print('best path found is {}'.format(self.best_path))
 
         # Hitung konsumsi bahan bakar dan emisi karbon
-        efisiensi_bahan_bakar = 7  # dalam km/L, rata-rata untuk truk distribusi
         faktor_emisi = 2.68  # dalam kg CO2e per liter bahan bakar diesel
-        konsumsi_bahan_bakar = self.hitung_konsumsi_bahan_bakar(self.best_path_distance, efisiensi_bahan_bakar)
-        emisi_karbon = self.hitung_emisi_karbon(konsumsi_bahan_bakar, faktor_emisi)
+        emisi_karbon = self.hitung_emisi_karbon(self.best_path_distance, faktor_emisi)
 
         # Tampilkan hasil
-        print('Konsumsi Bahan Bakar: {:.2f} liter'.format(konsumsi_bahan_bakar))
         print('Emisi Karbon: {:.2f} kg CO2e'.format(emisi_karbon))
 
     def select_next_index(self, ant):
@@ -135,7 +130,7 @@ class BasicACO:
             np.power(self.graph.heuristic_info_mat[current_index][index_to_visit], self.beta)
         transition_prob = transition_prob / np.sum(transition_prob)
 
-        if np.random.rand() < self.q0:
+        if np.random.rand() < self.tau:
             max_prob_index = np.argmax(transition_prob)
             next_index = index_to_visit[max_prob_index]
         else:
@@ -165,8 +160,5 @@ class BasicACO:
             if random.random() <= norm_transition_prob[ind]:
                 return index_to_visit[ind]
 
-    def hitung_konsumsi_bahan_bakar(self, jarak_tempuh, efisiensi_bahan_bakar):
-        return jarak_tempuh / efisiensi_bahan_bakar
-
-    def hitung_emisi_karbon(self, konsumsi_bahan_bakar, faktor_emisi):
-        return konsumsi_bahan_bakar * faktor_emisi            
+    def hitung_emisi_karbon(self, jarak_tempuh, faktor_emisi):
+        return jarak_tempuh * faktor_emisi            

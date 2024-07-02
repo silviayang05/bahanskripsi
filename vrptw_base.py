@@ -84,7 +84,7 @@ class VrptwGraph:
 
 
     def global_update_pheromone(self, paths, path_distances):
-    # Penguapan feromon global
+        # Penguapan feromon global
         self.pheromone_mat = (1 - self.rho) * self.pheromone_mat
 
         for path, path_distance in zip(paths, path_distances):
