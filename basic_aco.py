@@ -9,7 +9,7 @@ import time
 
 class BasicACO:
     def __init__(self, graph: VrptwGraph, ants_num=10, beta=2, tau=0.1, 
-                 whether_or_not_to_show_figure=True):
+                 whether_or_not_to_show_figure=True, max_iter=500):
         super()
         # graph Lokasi node dan informasi waktu layanan
         self.graph = graph
@@ -26,6 +26,7 @@ class BasicACO:
         self.best_vehicle_num = None
 
         self.whether_or_not_to_show_figure = whether_or_not_to_show_figure
+        self.max_iter = max_iter
 
     def run_basic_aco(self):
         # Mulai thread untuk menjalankan basic_aco dan gunakan thread utama untuk menggambar
@@ -52,7 +53,7 @@ class BasicACO:
         last_improvement_time = time.time()
 
         iter = 0
-        while True:
+        while iter < self.max_iter:
             # Atur beban kendaraan saat ini, jarak perjalanan saat ini, dan waktu saat ini untuk setiap semut
             ants = [Ant(self.graph) for _ in range(self.ants_num)]
             for ant in ants:
@@ -95,7 +96,7 @@ class BasicACO:
             # Perbarui tabel feromon
             self.graph.global_update_pheromone([self.best_path], [self.best_path_distance])
 
-            if time.time() - last_improvement_time > 600:
+            if time.time() - last_improvement_time > 100:
                 print('\n')
                 print('iteration exit: no improvement in the last 10 minutes')
                 break
