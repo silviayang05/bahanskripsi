@@ -9,7 +9,7 @@ import time
 
 class BasicACO:
     def __init__(self, graph: VrptwGraph, ants_num=10, beta=2, tau=0.1, 
-                 whether_or_not_to_show_figure=True, max_iter=500):
+                 whether_or_not_to_show_figure=True, max_time=600):
         super()
         # graph Lokasi node dan informasi waktu layanan
         self.graph = graph
@@ -26,7 +26,7 @@ class BasicACO:
         self.best_vehicle_num = None
 
         self.whether_or_not_to_show_figure = whether_or_not_to_show_figure
-        self.max_iter = max_iter
+        self.max_time = max_time
 
     def run_basic_aco(self):
         # Mulai thread untuk menjalankan basic_aco dan gunakan thread utama untuk menggambar
@@ -50,9 +50,8 @@ class BasicACO:
         :return:
         """
         start_time_total = time.time()
-        last_improvement_time = time.time()
 
-        while True:  # Ubah iterasi menjadi loop tanpa batas
+        while time.time() - start_time_total < self.max_time:
             # Atur beban kendaraan saat ini, jarak perjalanan saat ini, dan waktu saat ini untuk setiap semut
             ants = [Ant(self.graph) for _ in range(self.ants_num)]
             for ant in ants:
@@ -82,7 +81,6 @@ class BasicACO:
                 self.best_path = ants[int(best_index)].travel_path
                 self.best_path_distance = paths_distance[best_index]
                 self.best_vehicle_num = self.best_path.count(0) - 1
-                last_improvement_time = time.time()
 
                 # Tampilan grafis
                 if self.whether_or_not_to_show_figure:
@@ -95,18 +93,13 @@ class BasicACO:
             # Perbarui tabel feromon
             self.graph.global_update_pheromone([self.best_path], [self.best_path_distance])
 
-            if time.time() - last_improvement_time > 600:  # Ubah 100 menjadi 600
-                print('\n')
-                print('iteration exit: no improvement in the last 10 minutes')
-                break
-
         print('\n')
         print('final best path distance is %.0f, number of vehicle is %d' % (self.best_path_distance, self.best_vehicle_num))
         print('it takes %0.2f second aco running' % (time.time() - start_time_total))
         print('best path found is {}'.format(self.best_path))
 
         # Hitung konsumsi bahan bakar dan emisi karbon
-        faktor_emisi = 2.68  # dalam kg CO2e per liter bahan bakar diesel
+        faktor_emisi = 0.147  # dalam kg CO2e per liter bahan bakar diesel
         emisi_karbon = self.hitung_emisi_karbon(self.best_path_distance, faktor_emisi)
 
         # Tampilkan hasil
