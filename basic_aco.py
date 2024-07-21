@@ -52,8 +52,7 @@ class BasicACO:
         start_time_total = time.time()
         last_improvement_time = time.time()
 
-        iter = 0
-        while iter < self.max_iter:
+        while True:  # Ubah iterasi menjadi loop tanpa batas
             # Atur beban kendaraan saat ini, jarak perjalanan saat ini, dan waktu saat ini untuk setiap semut
             ants = [Ant(self.graph) for _ in range(self.ants_num)]
             for ant in ants:
@@ -90,19 +89,17 @@ class BasicACO:
                     path_queue_for_figure.put(PathMessage(self.best_path, self.best_path_distance))
 
                 print('\n')
-                print('[iteration %d]: find a new path, its distance is %.0f' % (iter, self.best_path_distance))
+                print('find a new path, its distance is %.0f' % (self.best_path_distance))
                 print('it takes %0.2f second aco running' % (time.time() - start_time_total))
 
             # Perbarui tabel feromon
             self.graph.global_update_pheromone([self.best_path], [self.best_path_distance])
 
-            if time.time() - last_improvement_time > 100:
+            if time.time() - last_improvement_time > 600:  # Ubah 100 menjadi 600
                 print('\n')
                 print('iteration exit: no improvement in the last 10 minutes')
                 break
 
-            iter += 1
-            
         print('\n')
         print('final best path distance is %.0f, number of vehicle is %d' % (self.best_path_distance, self.best_vehicle_num))
         print('it takes %0.2f second aco running' % (time.time() - start_time_total))
